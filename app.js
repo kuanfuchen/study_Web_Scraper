@@ -1,15 +1,30 @@
 const cheerio = require('cheerio');
 // const axios = require('axios');
 const resquest = require('request');
+const nodemailer = require('nodemailer');
 const http = require('http');
+const dotenv = require('dotenv');
+dotenv.config({'path':'./config.env'});
 const url = 'https://rate.bot.com.tw/xrt?Lang=zh-TW';
+// let transferIndex = 0;
 const header = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Length, X-Requested-With',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'PATCH, POST, GET,OPTIONS,DELETE',
   'Content-Type': 'application/json',
 };
-
+const transporter = nodemailer.createTransport({
+  service:'hotmail',
+  auth:{
+    user:'your@hotmail.com',
+    pass:'your.EMAIL_PASSWORD',
+  }
+});
+const mailOptions = {
+  from: 'creazy_fu@hotmail.com',
+  to: 'creazykfc@gmail.com',
+  subject:'賣美金了',
+} 
 const getWebScraper = (req, res)=>{
   if(req.url === '/crawler'){
     const result = [];
@@ -37,7 +52,7 @@ const getWebScraper = (req, res)=>{
         });
         const sellSpotRateCoinRateToNumber = Number(sellSpotRateCoinRate)
         // console.log(typeof sellSpotRateCoinRate,'buySpotRateCoinPriceToNumber')
-        if(coinType.indexOf('美金') !== -1 && sellSpotRateCoinRateToNumber > 32){
+        if(coinType.indexOf('美金') !== -1 && sellSpotRateCoinRateToNumber > 31.9){
           console.log({
             'type':coinType,
             'cash buy':buyCashCoinPrice,
@@ -45,6 +60,16 @@ const getWebScraper = (req, res)=>{
             'spot rate buy':buySpotRateCoinPrice,
             'spot rate sell':sellSpotRateCoinRate,
           })
+          console.log(transporter)
+          const writeText = `<body><h4>賣美金啦</h4><p>目前買美金匯率${sellSpotRateCoinRate}</p></body>`
+          mailOptions.html = writeText;
+          // transporter.sendMail(mailOptions, (err, info)=>{
+          //   if(err){
+          //     return console.log(err)
+          //   }else{
+          //     console.log('massage:' + info.response)
+          //   }
+          // })
         }
       };
       // }
@@ -54,7 +79,8 @@ const getWebScraper = (req, res)=>{
       status:'success'
     }));
     res.end();
-  })
+  });
+
     // axios.get(url).then((response)=>{
     //   if(!response.data)return
     //   const data = response.data;
@@ -86,9 +112,14 @@ const getWebScraper = (req, res)=>{
   }
 }
 const repeatUsedTransfer = (req,res)=>{
-  setInterval(() => {
-    getWebScraper(req,res)
-  }, 10000);
+  // if(transferIndex === 0){
+    getWebScraper(req,res);
+  // }else{
+    setInterval(() => {
+      getWebScraper(req,res)
+    }, 600000);
+  // };
+  // i++
 }
 
 http.createServer(repeatUsedTransfer).listen(8086);
