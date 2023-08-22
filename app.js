@@ -21,8 +21,8 @@ const transporter = nodemailer.createTransport({
   }
 });
 const mailOptions = {
-  from: 'creazy_fu@hotmail.com',
-  to: 'creazykfc@gmail.com',
+  from: 'your@hotmail.com',
+  to: 'my@gmail.com',
   subject:'賣美金了',
 } 
 const getWebScraper = (req, res)=>{
